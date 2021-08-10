@@ -1,0 +1,210 @@
+{
+    "term": "москва",
+    "moresuggestions": 25,
+    "autoSuggestInstance": null,
+    "trackingID": "6112b7a49ac136f49b8d31f2afd536f1",
+    "misspellingfallback": false,
+    "suggestions": [
+        {
+            "group": "CITY_GROUP",
+            "entities": [
+                {
+                    "geoId": "2395",
+                    "destinationId": "1153093",
+                    "landmarkCityDestinationId": null,
+                    "type": "CITY",
+                    "redirectPage": "DEFAULT_PAGE",
+                    "latitude": 55.55918638239373,
+                    "longitude": 37.363508158852,
+                    "searchDetail": null,
+                    "caption": "<span class='highlighted'>Москва</span>, Россия",
+                    "name": "Москва"
+                },
+                {
+                    "geoId": "3000662241",
+                    "destinationId": "10565407",
+                    "landmarkCityDestinationId": null,
+                    "type": "NEIGHBORHOOD",
+                    "redirectPage": "DEFAULT_PAGE",
+                    "latitude": 55.75392982248384,
+                    "longitude": 37.61520066060891,
+                    "searchDetail": null,
+                    "caption": "Центр Москвы, <span class='highlighted'>Москва</span>, Россия",
+                    "name": "Центр Москвы"
+                },
+                {
+                    "geoId": "553248628619654056",
+                    "destinationId": "10779356",
+                    "landmarkCityDestinationId": null,
+                    "type": "NEIGHBORHOOD",
+                    "redirectPage": "DEFAULT_PAGE",
+                    "latitude": 55.78307420886072,
+                    "longitude": 37.772573964315406,
+                    "searchDetail": null,
+                    "caption": "Измайлово, <span class='highlighted'>Москва</span>, Россия",
+                    "name": "Измайлово"
+                },
+                {
+                    "geoId": "6057784",
+                    "destinationId": "1665959",
+                    "landmarkCityDestinationId": null,
+                    "type": "NEIGHBORHOOD",
+                    "redirectPage": "DEFAULT_PAGE",
+                    "latitude": 55.75081554788916,
+                    "longitude": 37.584551299807664,
+                    "searchDetail": null,
+                    "caption": "Арбат, <span class='highlighted'>Москва</span>, Россия",
+                    "name": "Арбат"
+                },
+                {
+                    "geoId": "6297393",
+                    "destinationId": "1786031",
+                    "landmarkCityDestinationId": null,
+                    "type": "NEIGHBORHOOD",
+                    "redirectPage": "DEFAULT_PAGE",
+                    "latitude": 55.79924414924724,
+                    "longitude": 37.67739049110636,
+                    "searchDetail": null,
+                    "caption": "Сокольники, <span class='highlighted'>Москва</span>, Россия",
+                    "name": "Сокольники"
+                }
+            ]
+        },
+        {
+            "group": "HOTEL_GROUP",
+            "entities": [
+                {
+                    "geoId": "890376",
+                    "destinationId": "204643",
+                    "landmarkCityDestinationId": null,
+                    "type": "HOTEL",
+                    "redirectPage": "DEFAULT_PAGE",
+                    "latitude": 55.822514,
+                    "longitude": 37.645828,
+                    "searchDetail": null,
+                    "caption": "Гостиница «Космос», <span class='highlighted'>Москва</span>, Россия",
+                    "name": "Гостиница «Космос»"
+                },
+                {
+                    "geoId": "5650275",
+                    "destinationId": "426905",
+                    "landmarkCityDestinationId": null,
+                    "type": "HOTEL",
+                    "redirectPage": "DEFAULT_PAGE",
+                    "latitude": 55.74644,
+                    "longitude": 37.53467,
+                    "searchDetail": null,
+                    "caption": "NOVOTEL <span class='highlighted'>Москва</span> Сити, Москва, Россия",
+                    "name": "NOVOTEL Москва Сити"
+                },
+                {
+                    "geoId": "9145",
+                    "destinationId": "203480",
+                    "landmarkCityDestinationId": null,
+                    "type": "HOTEL",
+                    "redirectPage": "DEFAULT_PAGE",
+                    "latitude": 55.7496,
+                    "longitude": 37.58351,
+                    "searchDetail": null,
+                    "caption": "АЗИМУТ Отель Смоленская <span class='highlighted'>Москва</span>, Москва, Россия",
+                    "name": "АЗИМУТ Отель Смоленская Москва"
+                },
+                {
+                    "geoId": "520631",
+                    "destinationId": "309618",
+                    "landmarkCityDestinationId": null,
+                    "type": "HOTEL",
+                    "redirectPage": "DEFAULT_PAGE",
+                    "latitude": 55.961163,
+                    "longitude": 37.413766,
+                    "searchDetail": null,
+                    "caption": "Парк Инн от Рэдиссон Аэропорт Шереметьево <span class='highlighted'>Москва</span>, Химки, Московская область, Подмосковье (Московская область), Россия",
+                    "name": "Парк Инн от Рэдиссон Аэропорт Шереметьево Москва"
+                }
+            ]
+        },
+        {
+            "group": "LANDMARK_GROUP",
+            "entities": [
+                {
+                    "geoId": "553248621562490939",
+                    "destinationId": "10666602",
+                    "landmarkCityDestinationId": "1695466",
+                    "type": "LANDMARK",
+                    "redirectPage": "DEFAULT_PAGE",
+                    "latitude": 55.751339,
+                    "longitude": 37.537695,
+                    "searchDetail": null,
+                    "caption": "<span class='highlighted'>Москва</span>-Сити, Москва, Россия",
+                    "name": "Москва-Сити"
+                },
+                {
+                    "geoId": "6057782",
+                    "destinationId": "1647675",
+                    "landmarkCityDestinationId": "1153093",
+                    "type": "LANDMARK",
+                    "redirectPage": "DEFAULT_PAGE",
+                    "latitude": 55.75130404103457,
+                    "longitude": 37.61753365869443,
+                    "searchDetail": null,
+                    "caption": "Московский Кремль, <span class='highlighted'>Москва</span>, Россия",
+                    "name": "Московский Кремль"
+                },
+                {
+                    "geoId": "6129765",
+                    "destinationId": "1688969",
+                    "landmarkCityDestinationId": "1695466",
+                    "type": "LANDMARK",
+                    "redirectPage": "DEFAULT_PAGE",
+                    "latitude": 55.752349,
+                    "longitude": 37.544697,
+                    "searchDetail": null,
+                    "caption": "Экспоцентр, <span class='highlighted'>Москва</span>, Россия",
+                    "name": "Экспоцентр"
+                }
+            ]
+        },
+        {
+            "group": "TRANSPORT_GROUP",
+            "entities": [
+                {
+                    "geoId": "5199443",
+                    "destinationId": "1666194",
+                    "landmarkCityDestinationId": null,
+                    "type": "AIRPORT",
+                    "redirectPage": "DEFAULT_PAGE",
+                    "latitude": 55.966884,
+                    "longitude": 37.415694,
+                    "searchDetail": null,
+                    "caption": "<span class='highlighted'>Москва</span>, Россия (SVO-Шереметьево)",
+                    "name": "Москва (SVO-Шереметьево)"
+                },
+                {
+                    "geoId": "5196630",
+                    "destinationId": "1666214",
+                    "landmarkCityDestinationId": null,
+                    "type": "AIRPORT",
+                    "redirectPage": "DEFAULT_PAGE",
+                    "latitude": 55.603842,
+                    "longitude": 37.290621,
+                    "searchDetail": null,
+                    "caption": "<span class='highlighted'>Москва</span>, Россия (VKO-Внуково, международный)",
+                    "name": "Москва (VKO-Внуково, международный)"
+                },
+                {
+                    "geoId": "6024359",
+                    "destinationId": "1666007",
+                    "landmarkCityDestinationId": null,
+                    "type": "AIRPORT",
+                    "redirectPage": "DEFAULT_PAGE",
+                    "latitude": 55.414495,
+                    "longitude": 37.899907,
+                    "searchDetail": null,
+                    "caption": "<span class='highlighted'>Москва</span>, Россия (DME-Домодедово, международный)",
+                    "name": "Москва (DME-Домодедово, международный)"
+                }
+            ]
+        }
+    ],
+    "geocodeFallback": false
+}
