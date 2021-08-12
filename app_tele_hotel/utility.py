@@ -19,3 +19,6 @@ def mess_wait(stop_event, chat_id, message_id, text):
         bot.edit_message_text(f"{text}{point}", chat_id=chat_id,
                               message_id=message_id)
         count_point += 1
+
+# class SearchHotel:
+#     def lowPrice(self):

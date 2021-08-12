@@ -2,6 +2,7 @@ import json
 import re
 import threading
 import time
+from users import Users
 
 from utility import mess_wait
 from telebot import TeleBot, types, apihelper
@@ -21,59 +22,11 @@ json_data = dict()
 user_bd = dict()
 
 
-class Users:
 
-    def __init__(self, id_user: str, id_city=None) -> None:
-        self.id_user = id_user
-        self.check_choice_city = False
-        self.bool_city = False
-        self.data = dict()
-        self.id_city = id_city
-
-    @property
-    def id_user(self):
-        return self._id_user
-
-    @id_user.setter
-    def id_user(self, id_user):
-        self._id_user = id_user
-
-    @property
-    def id_city(self):
-        return self._id_city
-
-    @id_city.setter
-    def id_city(self, id_city):
-        self._id_city = id_city
-
-    @property
-    def check_choice_city(self):
-        return self._check_choice_city
-
-    @check_choice_city.setter
-    def check_choice_city(self, boolean: bool) -> None:
-        self._check_choice_city = boolean
-
-    @property
-    def bool_city(self):
-        return self._bool_city
-
-    @bool_city.setter
-    def bool_city(self, boolean: bool) -> None:
-        self._bool_city = boolean
-
-    @property
-    def data(self):
-        return self._data
-
-    @data.setter
-    def data(self, json_data: dict) -> None:
-        self._data = json_data
 
 
 @bot.message_handler(commands=['start', 'help'])
 def handle_start_help(message):
-    global user_bd, Users
     if message.from_user.username:
         username = message.from_user.username
     else:
@@ -100,14 +53,14 @@ def get_text_messages(message):
         user_bd[message.from_user.id] = Users(message.from_user.id)
         bot.send_message(message.from_user.id, "В каком городе будем искать отель?")
         user_bd[message.from_user.id].check_choice_city = True
-        # lowprice = types.InlineKeyboardButton(text='Самый дешёвый в городе', callback_data='lowprice')
-        # highprice = types.InlineKeyboardButton(text='Самый дорогой в городе', callback_data='highprice')
-        # bestdeal = types.InlineKeyboardButton(text='фильтр по цене и расположению от центра',
-        #                                       callback_data='bestdeal')
-        #
-        # markup.add(lowprice, highprice, bestdeal, row_width=True)
+        markup = types.InlineKeyboardMarkup()
+        low_price = types.InlineKeyboardButton(text='Самый дешёвый в городе', callback_data='/lowprice')
+        high_price = types.InlineKeyboardButton(text='Самый дорогой в городе', callback_data='/highprice')
+        best_deal = types.InlineKeyboardButton(text='фильтр по цене и расположению от центра',
+                                              callback_data='/bestdeal')
 
-        # bot.send_message(message.from_user.id, "🌍 Выберете округ", reply_markup=markup)
+        markup.add(low_price, high_price, best_deal, row_width=True)
+        bot.send_message(message.from_user.id, "⚙ выберете способ поиска", reply_markup=markup)
 
     elif message.text == '📗 Руководство':
         bot.send_message(message.from_user.id, info)
@@ -115,9 +68,7 @@ def get_text_messages(message):
     elif user_bd[message.from_user.id].check_choice_city:
 
         user_bd[message.from_user.id].check_choice_city = False
-
         message_info = bot.send_message(message.from_user.id, 'Идет поиск отеля')
-
         pill2kill = threading.Event()
         proc = threading.Thread(target=mess_wait,
                                 args=(pill2kill, message_info.chat.id, message_info.id, message_info.text))
@@ -150,7 +101,7 @@ def get_text_messages(message):
         2. Количество отелей, которые необходимо вывести в результате (не больше
         заранее определённого максимума).
         """
-        print('Тут бизнес логика лоу прайс')
+        print(message.text)
     elif message.text == '/highprice':
         """После ввода команды у пользователя запрашивается:
         1. Город, где будет проводиться поиск.
