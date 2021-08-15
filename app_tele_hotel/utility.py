@@ -6,9 +6,10 @@ from telebot import TeleBot, types, apihelper
 from dotenv import dotenv_values
 import requests
 
+from app_tele_hotel.users import Users
+
 config = dotenv_values(".env")
 
-RAPID_API_TOKEN = TeleBot(config['RAPID_API_TOKEN'])
 user_bd = dict()
 
 
@@ -17,9 +18,6 @@ def check_language(text):
         return 'en_US'
     else:
         return 'ru_RU'
-
-
-
 
 
 def mess_wait(stop_event, chat_id, message_id, text, bot):
@@ -46,10 +44,10 @@ class SearchHotel:
     }
 
     @classmethod
-    def SearchCityData(cls, bot, message):
+    def search_city_data(cls, bot, message):
         url = "https://hotels4.p.rapidapi.com/locations/search"
         querystring = {"query": message.text, "locale": check_language(message.text)}
-        message_info = bot.send_message(message.from_user.id, 'Идет поиск отеля')
+        message_info = bot.send_message(message.from_user.id, 'Идет поиск иформации по городу')
         pill2kill = threading.Event()
         wait_effect = threading.Thread(target=mess_wait,
                                        args=(pill2kill, message_info.chat.id, message_info.id, message_info.text, bot))
@@ -70,5 +68,42 @@ class SearchHotel:
             markup.add(add)
             count += 1
             print(patterns_span.sub('', entities_city['caption']))
-        user_bd[message.from_user.id].bool_city = True
         bot.send_message(message.from_user.id, "🌍 Уточните город", reply_markup=markup)
+
+    @classmethod
+    def search_hotels(cls, bot, message):
+        url = "https://hotels4.p.rapidapi.com/properties/list"
+        querystring = {
+            "destinationId": user_bd[message.from_user.id].id_city,
+            "pageNumber": "1",
+            "pageSize": user_bd[message.from_user.id].config['count_hotels'],
+            "checkIn": "2021-08-17",
+            "checkOut": "2021-08-18",
+            "adults1": "1",
+            "sortOrder": "PRICE",
+            "locale": "ru_RU",
+            "currency": "RUB"
+        }
+        message_info = bot.send_message(message.from_user.id, 'Идет поиск отелей')
+        pill2kill = threading.Event()
+        wait_effect = threading.Thread(target=mess_wait,
+                                       args=(pill2kill, message_info.chat.id, message_info.id, message_info.text, bot))
+        wait_effect.start()
+        response = requests.get(url, headers=cls.headers, params=querystring)
+        pill2kill.set()
+        wait_effect.join()
+        apihelper.delete_message(config['TELEGRAM_API_TOKEN'], message_info.chat.id,
+                                 message_info.id)
+        user_bd[message.from_user.id].hotels_data = json.loads(response.text)
+
+        print(user_bd[message.from_user.id].id_city)
+        print(user_bd[message.from_user.id].hotels_data['data']['body']['searchResults']['results'])
+
+        for i in user_bd[message.from_user.id].hotels_data['data']['body']['searchResults']['results']:
+            bot.send_message(message.from_user.id,
+                             f'Имя: {i["name"]}\n'
+                             f'Адрес: {i["address"]["countryName"]}, {i["address"]["locality"]}, {i["address"]["streetAddress"]}\n'
+                             f'От центра города: {i["landmarks"][0]["distance"]}\n'
+                             f'Цена {i["ratePlan"]["price"]["current"]}')
+        user_bd[message.from_user.id].config = {'count_hotels': 0, 'search_price_filter': None, 'bool_city': False,
+                       'check_choice_city': False, 'id_last_messages': None}

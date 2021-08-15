@@ -2,10 +2,13 @@ class Users:
 
     def __init__(self, id_user: str, id_city=None) -> None:
         self.id_user = id_user
-        self.check_choice_city = False
-        self.bool_city = False
+        # self.check_choice_city = False
+        # self.bool_city = False
         self.data = dict()
+        self.hotels_data = dict()
         self.id_city = id_city
+        self.config = {'count_hotels': 0, 'search_price_filter': None, 'bool_city': False,
+                       'check_choice_city': False, 'id_last_messages': None}
 
     @property
     def id_user(self):
@@ -24,20 +27,12 @@ class Users:
         self._id_city = id_city
 
     @property
-    def check_choice_city(self):
-        return self._check_choice_city
+    def hotels_data(self):
+        return self._hotels_data
 
-    @check_choice_city.setter
-    def check_choice_city(self, boolean: bool) -> None:
-        self._check_choice_city = boolean
-
-    @property
-    def bool_city(self):
-        return self._bool_city
-
-    @bool_city.setter
-    def bool_city(self, boolean: bool) -> None:
-        self._bool_city = boolean
+    @hotels_data.setter
+    def hotels_data(self, json_data: dict) -> None:
+        self._hotels_data = json_data
 
     @property
     def data(self):
@@ -46,3 +41,11 @@ class Users:
     @data.setter
     def data(self, json_data: dict) -> None:
         self._data = json_data
+
+    @property
+    def config(self):
+        return self._config
+
+    @config.setter
+    def config(self, config):
+        self._config = config
