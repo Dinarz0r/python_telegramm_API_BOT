@@ -38,6 +38,9 @@ def handle_start_help(message):
         start_help_text = f"Привет {username}, я БОТ Too Easy Travel✅,\n" \
                           "И я смогу подобрать для тебя отель 🏨"
         bot.send_message(message.from_user.id, start_help_text, reply_markup=markup)
+        url_photo = 'https://exp.cdn-hotels.com/hotels/39000000/38090000/38083200/38083130/73e39fa2_{size}.jpg'.format(
+            size='z')
+        bot.send_photo(message.from_user.id, url_photo)
     else:
         bot.send_message(message.from_user.id, info, reply_markup=markup)
 
@@ -58,20 +61,21 @@ def get_text_messages(message):
     elif message.text == '📗 Руководство':
         bot.send_message(message.from_user.id, info)
 
-    # elif message.text == '/lowprice':
-    #     """После ввода команды у пользователя запрашивается:
-    #     1. Город, где будет проводиться поиск.
-    #     2. Количество отелей, которые необходимо вывести в результате (не больше
-    #     заранее определённого максимума).
-    #     """
-    #     print('Тут бизнес логика lowprice')
-    # elif message.text == '/highprice':
-    #     """После ввода команды у пользователя запрашивается:
-    #     1. Город, где будет проводиться поиск.
-    #     2. Количество отелей, которые необходимо вывести в результате (не больше
-    #     заранее определённого максимума).
-    #     """
-    #     print('Тут бизнес логика highprice')
+    elif message.text == '/lowprice':
+        print('/lowprice salam!')
+        bot.send_message(user_bd[message.from_user.id].id_user, "В каком городе будем искать ?")
+        user_bd[message.from_user.id].config['bool_city'] = True
+        user_bd[message.from_user.id].config['search_price_filter'] = 'PRICE'
+    elif message.text == '/highprice':
+        """После ввода команды у пользователя запрашивается:
+        1. Город, где будет проводиться поиск.
+        2. Количество отелей, которые необходимо вывести в результате (не больше
+        заранее определённого максимума).
+        """
+        print('/highprice salam!')
+        bot.send_message(user_bd[message.from_user.id].id_user, "В каком городе будем искать ?")
+        user_bd[message.from_user.id].config['bool_city'] = True
+        user_bd[message.from_user.id].config['search_price_filter'] = 'PRICE_HIGHEST_FIRST'
     # elif message.text == '/bestdeal':
     #     """
     #     После ввода команды у пользователя запрашивается:
@@ -82,9 +86,9 @@ def get_text_messages(message):
     #     заранее определённого максимума).
     #     """
     #     print('Тут бизнес логика bestdeal')
-    elif user_bd[message.from_user.id].config['bool_city'] and not user_bd[message.from_user.id].config[
-        'check_choice_city'] and not user_bd[message.from_user.id].config['count_hotels']:
-        # user_bd[message.from_user.id].config['bool_city'] = False
+    elif user_bd[message.from_user.id].config['bool_city'] \
+            and not user_bd[message.from_user.id].config['check_choice_city'] \
+            and not user_bd[message.from_user.id].config['count_hotels']:
         user_bd[message.from_user.id].config['check_choice_city'] = True
         SearchHotel.search_city_data(bot, message)
 
@@ -93,21 +97,28 @@ def get_text_messages(message):
             and not user_bd[message.from_user.id].config['count_hotels']:
         user_bd[message.from_user.id].config['count_hotels'] = int(message.text)
         print("кол-во отелей", user_bd[message.from_user.id].config['count_hotels'])
-        SearchHotel.search_hotels(bot, message)
+        SearchHotel.search_hotels(bot, message,
+                                  price_filter=user_bd[message.from_user.id].config['search_price_filter'],
+                                  photo_hotel=True)
 
     # elif user_bd[message.from_user.id].config['check_choice_city'] \
     #         and user_bd[message.from_user.id].config['bool_city'] \
     #         and user_bd[message.from_user.id].config['count_hotels']:
 
 
-
-
 @bot.callback_query_handler(func=lambda c: True)
 def inline(c):
     if c.data == '/lowprice':
         print('/lowprice salam')
-        user_bd[c.message.chat.id].config['search_price_filter'] = 'lowprice'
-        bot.send_message(user_bd[c.message.chat.id].id_user, "В каком городе будем искать ?")
+        user_bd[c.message.chat.id].config['search_price_filter'] = 'PRICE'
+        bot.send_message(user_bd[c.message.chat.id].id_user, 'В каком городе будем искать?')
+        apihelper.delete_message(config['TELEGRAM_API_TOKEN'], user_bd[c.message.chat.id].id_user,
+                                 user_bd[c.message.chat.id].config['id_last_messages'])
+        user_bd[c.message.chat.id].config['bool_city'] = True
+    elif c.data == '/highprice':
+        print('/highprice salam')
+        user_bd[c.message.chat.id].config['search_price_filter'] = 'PRICE_HIGHEST_FIRST'
+        bot.send_message(user_bd[c.message.chat.id].id_user, 'В каком городе будем искать ?')
         apihelper.delete_message(config['TELEGRAM_API_TOKEN'], user_bd[c.message.chat.id].id_user,
                                  user_bd[c.message.chat.id].config['id_last_messages'])
         user_bd[c.message.chat.id].config['bool_city'] = True
@@ -115,10 +126,8 @@ def inline(c):
         bot.send_message(user_bd[c.message.chat.id].id_user, "Какое кол-во отелей вывести? (Макс. 10)")
         user_bd[c.message.chat.id].id_city = user_bd[c.message.chat.id].data['suggestions'][0]['entities'][int(c.data)][
             'destinationId']
-
-        patterns_span = re.compile(r'<.*?>')
-
         user_bd[c.message.chat.id].config['check_choice_city'] = True
+        patterns_span = re.compile(r'<.*?>')
 
 
 if __name__ == '__main__':

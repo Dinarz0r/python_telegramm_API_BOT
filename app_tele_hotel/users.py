@@ -8,7 +8,8 @@ class Users:
         self.hotels_data = dict()
         self.id_city = id_city
         self.config = {'count_hotels': 0, 'search_price_filter': None, 'bool_city': False,
-                       'check_choice_city': False, 'id_last_messages': None}
+                       'check_choice_city': False, 'id_last_messages': None,
+                       'photo_hotel': False, 'photo_hotel_count': 0}
 
     @property
     def id_user(self):

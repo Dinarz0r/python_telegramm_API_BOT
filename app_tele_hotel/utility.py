@@ -5,7 +5,7 @@ import threading
 from telebot import TeleBot, types, apihelper
 from dotenv import dotenv_values
 import requests
-
+from datetime import date, timedelta
 from app_tele_hotel.users import Users
 
 config = dotenv_values(".env")
@@ -58,7 +58,7 @@ class SearchHotel:
         apihelper.delete_message(config['TELEGRAM_API_TOKEN'], message_info.chat.id,
                                  message_info.id)
         user_bd[message.from_user.id].data = json.loads(response.text)
-
+        print(user_bd[message.from_user.id].data)
         patterns_span = re.compile(r'<.*?>')
         count = 0
         markup = types.InlineKeyboardMarkup()
@@ -67,20 +67,21 @@ class SearchHotel:
                                              callback_data=str(count))
             markup.add(add)
             count += 1
-            print(patterns_span.sub('', entities_city['caption']))
         bot.send_message(message.from_user.id, "🌍 Уточните город", reply_markup=markup)
 
     @classmethod
-    def search_hotels(cls, bot, message):
+    def search_hotels(cls, bot, message, price_filter, distance=False, photo_hotel=False):
+        if price_filter is None:
+            price_filter = 'PRICE'
         url = "https://hotels4.p.rapidapi.com/properties/list"
         querystring = {
             "destinationId": user_bd[message.from_user.id].id_city,
             "pageNumber": "1",
             "pageSize": user_bd[message.from_user.id].config['count_hotels'],
-            "checkIn": "2021-08-17",
-            "checkOut": "2021-08-18",
+            "checkIn": date.today(),
+            "checkOut": date.today() + timedelta(days=1),
             "adults1": "1",
-            "sortOrder": "PRICE",
+            "sortOrder": price_filter,
             "locale": "ru_RU",
             "currency": "RUB"
         }
@@ -100,10 +101,38 @@ class SearchHotel:
         print(user_bd[message.from_user.id].hotels_data['data']['body']['searchResults']['results'])
 
         for i in user_bd[message.from_user.id].hotels_data['data']['body']['searchResults']['results']:
+
             bot.send_message(message.from_user.id,
                              f'Имя: {i["name"]}\n'
                              f'Адрес: {i["address"]["countryName"]}, {i["address"]["locality"]}, {i["address"]["streetAddress"]}\n'
                              f'От центра города: {i["landmarks"][0]["distance"]}\n'
                              f'Цена {i["ratePlan"]["price"]["current"]}')
+            if photo_hotel:
+                url_get_photo = "https://hotels4.p.rapidapi.com/properties/get-hotel-photos"
+                print(i['id'])
+                querystring_photo = {"id": i["id"]}
+                response = requests.get(url_get_photo, headers=cls.headers, params=querystring_photo)
+                data = json.loads(response.text)
+                if data.get('hotelImages'):
+                    print(len(data['hotelImages']))
+                    if len(data['hotelImages']) >= 5:
+                        for index in range(5):
+                            # print(data['hotelImages']['baseUrl'].format(size='l'))
+                            bot.send_photo(message.from_user.id, data['hotelImages'][index]['baseUrl'].format(size='l'))
+                    # else:
+                    #     for index in range(user_bd[message.from_user.id].config['photo_hotel_count']):
+                    #         bot.send_photo(message.from_user.id, data['hotelImages']['baseUrl'][index].format(size='l'))
+
+                # if response.text == "[]":
+                #     continue
+                #
+                # for photo in json.loads(response.text['hotelImages']):
+                #     print(photo['baseUrl'].format(size='z'))
+                #     bot.send_photo(message.from_user.id, photo['baseUrl'].format(size='z'))
+                # else:
+                #     for index in range(5):
+                #         print(response.text['hotelImages'][index]['baseUrl'])
+                #         bot.send_photo(message.from_user.id, response.text['hotelImages'][index]['baseUrl'].format(size='z'))
+
         user_bd[message.from_user.id].config = {'count_hotels': 0, 'search_price_filter': None, 'bool_city': False,
-                       'check_choice_city': False, 'id_last_messages': None}
+                                                'check_choice_city': False, 'id_last_messages': None}
