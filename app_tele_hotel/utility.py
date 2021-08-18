@@ -1,6 +1,7 @@
 import json
 import re
 import threading
+import time
 
 from telebot import TeleBot, types, apihelper
 from dotenv import dotenv_values
@@ -74,6 +75,7 @@ class SearchHotel:
         if price_filter is None:
             price_filter = 'PRICE'
         url = "https://hotels4.p.rapidapi.com/properties/list"
+        url_get_photo = "https://hotels4.p.rapidapi.com/properties/get-hotel-photos"
         querystring = {
             "destinationId": user_bd[message.from_user.id].id_city,
             "pageNumber": "1",
@@ -97,42 +99,44 @@ class SearchHotel:
                                  message_info.id)
         user_bd[message.from_user.id].hotels_data = json.loads(response.text)
 
-        print(user_bd[message.from_user.id].id_city)
-        print(user_bd[message.from_user.id].hotels_data['data']['body']['searchResults']['results'])
-
         for i in user_bd[message.from_user.id].hotels_data['data']['body']['searchResults']['results']:
-
-            bot.send_message(message.from_user.id,
-                             f'Имя: {i["name"]}\n'
-                             f'Адрес: {i["address"]["countryName"]}, {i["address"]["locality"]}, {i["address"]["streetAddress"]}\n'
-                             f'От центра города: {i["landmarks"][0]["distance"]}\n'
-                             f'Цена {i["ratePlan"]["price"]["current"]}')
-            if photo_hotel:
-                url_get_photo = "https://hotels4.p.rapidapi.com/properties/get-hotel-photos"
-                print(i['id'])
-                querystring_photo = {"id": i["id"]}
-                response = requests.get(url_get_photo, headers=cls.headers, params=querystring_photo)
+            i_text = f'Имя: {i["name"]}\n' \
+                     f'Адрес: {i["address"]["countryName"]}, {i["address"]["locality"]}, ' \
+                     f'{i["address"]["streetAddress"]}\n' \
+                     f'От центра города: {i["landmarks"][0]["distance"]}\nЦена {i["ratePlan"]["price"]["current"]}'
+            if user_bd[message.from_user.id].config['flag_search_photo']:
+                photo_list = list()
+                response = requests.get(url_get_photo, headers=cls.headers, params={"id": i['id']})
+                time.sleep(2)
                 data = json.loads(response.text)
-                if data.get('hotelImages'):
-                    print(len(data['hotelImages']))
-                    if len(data['hotelImages']) >= 5:
-                        for index in range(5):
-                            # print(data['hotelImages']['baseUrl'].format(size='l'))
-                            bot.send_photo(message.from_user.id, data['hotelImages'][index]['baseUrl'].format(size='l'))
-                    # else:
-                    #     for index in range(user_bd[message.from_user.id].config['photo_hotel_count']):
-                    #         bot.send_photo(message.from_user.id, data['hotelImages']['baseUrl'][index].format(size='l'))
+                if data:
+                    if len(data['hotelImages']) >= user_bd[message.from_user.id].config['photo_hotel_count']:
+                        for index in range(user_bd[message.from_user.id].config['photo_hotel_count']):
+                            if not photo_list:
+                                photo_list.append(
+                                    types.InputMediaPhoto(data['hotelImages'][index]['baseUrl'].format(size='l'),
+                                                          caption=i_text))
+                            else:
+                                photo_list.append(
+                                    types.InputMediaPhoto(data['hotelImages'][index]['baseUrl'].format(size='l')))
 
-                # if response.text == "[]":
-                #     continue
-                #
-                # for photo in json.loads(response.text['hotelImages']):
-                #     print(photo['baseUrl'].format(size='z'))
-                #     bot.send_photo(message.from_user.id, photo['baseUrl'].format(size='z'))
-                # else:
-                #     for index in range(5):
-                #         print(response.text['hotelImages'][index]['baseUrl'])
-                #         bot.send_photo(message.from_user.id, response.text['hotelImages'][index]['baseUrl'].format(size='z'))
-
+                    else:
+                        for index in range(len(data['hotelImages'])):
+                            if photo_list:
+                                photo_list.append(
+                                    types.InputMediaPhoto(data['hotelImages'][index]['baseUrl'].format(size='l')))
+                            else:
+                                photo_list.append(
+                                    types.InputMediaPhoto(data['hotelImages'][index]['baseUrl'].format(size='l'),
+                                                          caption=i_text))
+                    bot.send_media_group(message.from_user.id, photo_list)
+                    photo_list.clear()
+                else:
+                    bot.send_message(message.from_user.id, i_text)
+            else:
+                bot.send_message(message.from_user.id, i_text)
         user_bd[message.from_user.id].config = {'count_hotels': 0, 'search_price_filter': None, 'bool_city': False,
-                                                'check_choice_city': False, 'id_last_messages': None}
+                                                'check_choice_city': False, 'id_last_messages': None, 'messages': None,
+                                                'check_photo_hotel': False, 'photo_hotel_count': 0,
+                                                'flag_search_photo': False,
+                                                'start_search': False}
