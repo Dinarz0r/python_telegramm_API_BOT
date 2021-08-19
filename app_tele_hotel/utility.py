@@ -10,7 +10,6 @@ from datetime import date, timedelta
 from app_tele_hotel.users import Users
 
 config = dotenv_values(".env")
-
 user_bd = dict()
 
 
@@ -71,7 +70,7 @@ class SearchHotel:
         bot.send_message(message.from_user.id, "🌍 Уточните город", reply_markup=markup)
 
     @classmethod
-    def search_hotels(cls, bot, message, price_filter, distance=False, photo_hotel=False):
+    def search_hotels(cls, bot, message, price_filter=None, distance=False, photo_hotel=False):
         if price_filter is None:
             price_filter = 'PRICE'
         url = "https://hotels4.p.rapidapi.com/properties/list"
@@ -98,7 +97,7 @@ class SearchHotel:
         apihelper.delete_message(config['TELEGRAM_API_TOKEN'], message_info.chat.id,
                                  message_info.id)
         user_bd[message.from_user.id].hotels_data = json.loads(response.text)
-
+        print(user_bd[message.from_user.id].hotels_data)
         for i in user_bd[message.from_user.id].hotels_data['data']['body']['searchResults']['results']:
             i_text = f'Имя: {i["name"]}\n' \
                      f'Адрес: {i["address"]["countryName"]}, {i["address"]["locality"]}, ' \

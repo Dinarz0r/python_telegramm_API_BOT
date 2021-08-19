@@ -38,6 +38,11 @@ def handle_start_help(message):
         start_help_text = f"Привет {username}, я БОТ Too Easy Travel✅,\n" \
                           "И я смогу подобрать для тебя отель 🏨"
         bot.send_message(message.from_user.id, start_help_text, reply_markup=markup)
+
+        def hello(message1):
+            return bot.send_message(message1.from_user.id, message1.text)
+
+        bot.register_next_step_handler(message, hello)
     else:
         bot.send_message(message.from_user.id, info, reply_markup=markup)
 
@@ -69,20 +74,19 @@ def get_text_messages(message):
         2. Количество отелей, которые необходимо вывести в результате (не больше
         заранее определённого максимума).
         """
-        print('/highprice salam!')
         bot.send_message(user_bd[message.from_user.id].id_user, "В каком городе будем искать ?")
         user_bd[message.from_user.id].config['bool_city'] = True
         user_bd[message.from_user.id].config['search_price_filter'] = 'PRICE_HIGHEST_FIRST'
-    # elif message.text == '/bestdeal':
-    #     """
-    #     После ввода команды у пользователя запрашивается:
-    #     1. Город, где будет проводиться поиск.
-    #     2. Диапазон цен.
-    #     3. Диапазон расстояния, на котором находится отель от центра.
-    #     4. Количество отелей, которые необходимо вывести в результате (не больше
-    #     заранее определённого максимума).
-    #     """
-    #     print('Тут бизнес логика bestdeal')
+    elif message.text == '/bestdeal':
+        """
+        После ввода команды у пользователя запрашивается:
+        1. Город, где будет проводиться поиск.
+        2. Диапазон цен.
+        3. Диапазон расстояния, на котором находится отель от центра.
+        4. Количество отелей, которые необходимо вывести в результате (не больше
+        заранее определённого максимума).
+        """
+        print('Тут бизнес логика bestdeal')
     elif user_bd[message.from_user.id].config['start_search']:
         SearchHotel.search_hotels(bot, message,
                                   price_filter=user_bd[message.from_user.id].config['search_price_filter'],
@@ -118,7 +122,6 @@ def get_text_messages(message):
         SearchHotel.search_hotels(bot, message,
                                   price_filter=user_bd[message.from_user.id].config['search_price_filter'],
                                   photo_hotel=user_bd[message.from_user.id].config['flag_search_photo'])
-
 
 
 @bot.callback_query_handler(func=lambda c: True)
@@ -157,7 +160,6 @@ def inline(c):
                                       photo_hotel=user_bd[c.message.chat.id].config['flag_search_photo'])
             user_bd[c.message.chat.id].config['start_search'] = True
             user_bd[c.message.chat.id].config['id_last_messages'] = None
-
 
 
 if __name__ == '__main__':
