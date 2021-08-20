@@ -1,7 +1,8 @@
 class Users:
 
-    def __init__(self, id_user: str, id_city=None) -> None:
-        self.id_user = id_user
+    def __init__(self, user, id_city=None) -> None:
+        self.username = user.from_user.username
+        self.id_user = user.from_user.id
         # self.check_choice_city = False
         # self.bool_city = False
         self.data = dict()

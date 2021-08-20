@@ -21,26 +21,18 @@ info = '● /help — помощь по командам бота\n' \
 @bot.message_handler(commands=['start', 'help'])
 def handle_start_help(message):
     if not user_bd.get(message.from_user.id):
-        user_bd[message.from_user.id] = Users(message.from_user.id)
-    if message.from_user.username:
-        username = message.from_user.username
-    else:
-        username = ''
+        user_bd[message.from_user.id] = Users(message)
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    itembtna = types.KeyboardButton('🏨Найти отель')
-    itembtnv = types.KeyboardButton('📗 Руководство')
-    itembtnd = types.KeyboardButton('🚧 О сервисе')
-    markup.row(itembtna, itembtnv)
-    markup.row(itembtnd)
+    btn_a = types.KeyboardButton('🏨Найти отель')
+    btn_b = types.KeyboardButton('📗 Руководство')
+    btn_c = types.KeyboardButton('🚧 О сервисе')
+    markup.row(btn_a, btn_b)
+    markup.row(btn_c)
     if message.text == '/start':
-        user_bd[message.from_user.id] = Users(message.from_user.id)
-        print(user_bd[message.from_user.id])
-        start_help_text = f"Привет {username}, я БОТ Too Easy Travel✅,\n" \
+        start_help_text = f"Привет {user_bd[message.from_user.id].username}, я БОТ Too Easy Travel✅,\n" \
                           "И я смогу подобрать для тебя отель 🏨"
         bot.send_message(message.from_user.id, start_help_text, reply_markup=markup)
-
-
-    else:
+    elif message.text == '/help':
         bot.send_message(message.from_user.id, info, reply_markup=markup)
 
 
@@ -59,6 +51,7 @@ def get_text_messages(message):
         print(message.chat.id)
         massage_info = bot.send_message(message.from_user.id, "🔎 выберете способ поиска", reply_markup=markup)
         bot.edit_message_reply_markup(message.from_user.id, message_id=massage_info.message_id, reply_markup=None)
+
         def hello(message1):
             return bot.send_message(message1.from_user.id, message1.text)
 
