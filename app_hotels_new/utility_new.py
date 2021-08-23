@@ -47,7 +47,7 @@ class SearchHotel:
     def search_city_data(cls, bot, message):
         url = "https://hotels4.p.rapidapi.com/locations/search"
         querystring = {"query": message.text, "locale": check_language(message.text)}
-        message_info = bot.send_message(message.from_user.id, 'Идет поиск иформации по городу')
+        message_info = bot.send_message(message.from_user.id, 'Идет поиск информации по городу')
         pill2kill = threading.Event()
         wait_effect = threading.Thread(target=mess_wait,
                                        args=(pill2kill, message_info.chat.id, message_info.id, message_info.text, bot))
@@ -59,14 +59,17 @@ class SearchHotel:
         user_bd[message.from_user.id].cache_data = json.loads(response.text)
         print('ТЕСТ ДАТА', user_bd[message.from_user.id].cache_data)
         patterns_span = re.compile(r'<.*?>')
-        count = 0
-        markup = types.InlineKeyboardMarkup()
-        for entities_city in user_bd[message.from_user.id].cache_data['suggestions'][0]['entities']:
-            add = types.InlineKeyboardButton(text=patterns_span.sub('', entities_city['caption']),
-                                             callback_data=f'choice_city_{count}', )
-            markup.add(add)
-            count += 1
-        bot.send_message(message.from_user.id, "🌍 Уточните город", reply_markup=markup)
+        if user_bd[message.from_user.id].cache_data['suggestions'][0]['entities']:
+            markup = types.InlineKeyboardMarkup()
+            count = 0
+            for entities_city in user_bd[message.from_user.id].cache_data['suggestions'][0]['entities']:
+                add = types.InlineKeyboardButton(text=patterns_span.sub('', entities_city['caption']),
+                                                 callback_data=f'choice_city_{count}', )
+                markup.add(add)
+                count += 1
+            bot.send_message(message.from_user.id, "🌍 Уточните город", reply_markup=markup)
+        else:
+            bot.send_message(message.from_user.id, 'Информация по указанному городу отсутствует')
 
     @classmethod
     def search_hotels(cls, bot, message):
@@ -165,9 +168,9 @@ class SearchHotel:
 
 def next_step_city(mess):
     print(mess.chat.id, mess.text)
-    if not mess.text.isalpha():
+    if len(re.findall(r'[А-Яа-яЁёa-zA-Z0-9 -]+', mess.text)) > 1:
         err_city = bot.send_message(mess.chat.id,
-                                    'Город долен содержать только буквы, вводи еще раз город.')
+                                    'Город должен содержать только буквы, вводи еще раз город.')
         bot.register_next_step_handler(err_city, next_step_city)
     else:
         user_bd[mess.chat.id].search_city = mess.text
@@ -193,7 +196,7 @@ def next_step_count_hotels(mess):
             request_photo(mess)
         else:
             msg_price = bot.send_message(mess.chat.id,
-                                         'Укажите диапазон цен. Пример (1000-4000)')
+                                         'Укажите диапазон цен отеля за сутки. Пример (1000-4000)')
             bot.register_next_step_handler(msg_price, range_request_price)
 
 
@@ -203,7 +206,7 @@ def range_request_price(mess):
         user_bd[mess.chat.id].price_min_max['min'] = min(price_min_max_list)
         user_bd[mess.chat.id].price_min_max['max'] = max(price_min_max_list)
         msg_dist = bot.send_message(mess.chat.id,
-                                    'Укажите диапазон расстояния. Пример (1-5)')
+                                    'Укажите диапазон расстояния от центра в км. Пример (1-5)')
         bot.register_next_step_handler(msg_dist, search_distance)
     else:
         err_num = bot.send_message(mess.chat.id,
