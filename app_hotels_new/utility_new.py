@@ -1,7 +1,6 @@
 import json
 import re
 import threading
-import time
 from datetime import date, timedelta
 import requests
 from telebot import TeleBot, apihelper, types
@@ -33,7 +32,7 @@ def mess_wait(stop_event, chat_id, message_id, text, bot):
         else:
             point = '|'
             count_point = -1
-        bot.edit_message_text(f"{text}{point}", chat_id=chat_id, message_id=message_id)
+        bot.edit_message_text(f"{text}{point}", chat_id=chat_id, message_id=message_id, parse_mode="Markdown")
         count_point += 1
 
 
@@ -69,7 +68,7 @@ class SearchHotel:
                 count += 1
             bot.send_message(message.from_user.id, "🌍 Уточните город", reply_markup=markup)
         else:
-            bot.send_message(message.from_user.id, 'Информация по указанному городу отсутствует')
+            bot.send_message(message.from_user.id, 'Информация по указанному городу отсутствует⛔️')
 
     @classmethod
     def search_hotels(cls, bot, message):
@@ -78,16 +77,18 @@ class SearchHotel:
         querystring = {
             "destinationId": user_bd[message.from_user.id].id_city,
             "pageNumber": "1",
-            "pageSize": user_bd[message.from_user.id].count_show_hotels,
-            "checkIn": date.today(),
-            "checkOut": date.today() + timedelta(days=1),
+            "pageSize": f"{user_bd[message.from_user.id].count_show_hotels}",
+            "checkIn": date.today() + timedelta(days=1),
+            "checkOut": date.today() + timedelta(days=2),
             "adults1": "1",
             "sortOrder": user_bd[message.from_user.id].search_method,
             "locale": "ru_RU",
-            "currency": "RUB"
+            "currency": "RUB",
+            "landmarkIds": "city center"
         }
+
         if user_bd[message.from_user.id].search_method == 'best_deal':
-            querystring.update({"pageSize": 25,
+            querystring.update({"pageSize": "25",
                                 "priceMin": user_bd[message.from_user.id].price_min_max['min'],
                                 "priceMax": user_bd[message.from_user.id].price_min_max['max'],
                                 "sortOrder": "PRICE",
@@ -104,7 +105,10 @@ class SearchHotel:
         apihelper.delete_message(config['TELEGRAM_API_TOKEN'], message_info.chat.id,
                                  message_info.id)
         user_bd[message.from_user.id].cache_data = json.loads(response.text)
-        print("Кэш с отелями", user_bd[message.from_user.id].cache_data)
+        print("поиск отеля", user_bd[message.from_user.id].cache_data)
+
+        # with open('my_test.json', 'w') as file:
+        #     json.dump(user_bd[message.from_user.id].cache_data, file, indent=4)
 
     @classmethod
     def show_hotels(cls, message):
@@ -125,27 +129,29 @@ class SearchHotel:
                     best_deal_view += 1
                     if best_deal_view > user_bd[message.from_user.id].count_show_hotels:
                         break
-            i_text = f'Имя: {i["name"]}\n' \
+            i_text = f'*Имя: {i["name"]}*\n' \
                      f'Адрес: {i["address"]["countryName"]}, {i["address"]["locality"]}, ' \
                      f'{i["address"]["streetAddress"]}\n' \
                      f'От центра города: {i["landmarks"][0]["distance"]}\nЦена {i["ratePlan"]["price"]["current"]}'
             if not user_bd[message.from_user.id].photo:
-                bot.send_message(message.from_user.id, i_text)
+                bot.send_message(message.from_user.id, i_text, parse_mode="Markdown")
             else:
-                message_info = bot.send_message(message.from_user.id, f'Идет поиск фото отеля {i["name"]}')
+                message_info = bot.send_message(message.from_user.id, f'Идет поиск фото отеля *{i["name"]}*',
+                                                parse_mode="Markdown")
                 pill2kill = threading.Event()
                 wait_effect = threading.Thread(target=mess_wait,
                                                args=(
                                                    pill2kill, message_info.chat.id, message_info.id, message_info.text,
                                                    bot))
                 wait_effect.start()
-                response = requests.get(url_get_photo, headers=cls.headers, params={"id": i['id']})
-                time.sleep(2)
+                response = requests.get(url_get_photo, headers=cls.headers, params={"id": i["id"]})
+                # time.sleep(2)
 
                 data = json.loads(response.text)
                 if data:
                     photo_list = [
-                        types.InputMediaPhoto(data['hotelImages'][0]['baseUrl'].format(size='l'), caption=i_text)
+                        types.InputMediaPhoto(data['hotelImages'][0]['baseUrl'].format(size='l'), caption=i_text,
+                                              parse_mode="Markdown")
                     ]
                     if len(data['hotelImages']) < user_bd[message.from_user.id].count_show_photo:
                         count_photo = len(data['hotelImages'])
@@ -162,8 +168,12 @@ class SearchHotel:
                                              message_info.id)
                     photo_list.clear()
                 else:
-                    bot.send_message(message.from_user.id, i_text)
-        user_bd[message.from_user.id] = Users(message)
+                    bot.send_message(message.from_user.id, i_text, parse_mode="Markdown")
+
+        bot.send_message(message.from_user.id,
+                         'Поиск завершен✅')
+        user_bd[message.from_user.id].save_history()
+        user_bd[message.from_user.id].clear_cache()
 
 
 def next_step_city(mess):

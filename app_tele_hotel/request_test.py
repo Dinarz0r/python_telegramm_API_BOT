@@ -25,9 +25,4 @@ import requests
 #     json.dump(data, file, indent=4, ensure_ascii=False)  # сериализация
 
 
-with open('my_test.json', 'r', encoding='UTF-8') as file:
-    data_json = json.loads(file.read())
-    for entities_city in data_json['suggestions'][0]['entities']:
-        patterns_span = re.compile(r'<.*?>')
 
-        print(patterns_span.sub('', entities_city['caption']))

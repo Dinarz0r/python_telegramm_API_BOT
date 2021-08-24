@@ -14,7 +14,7 @@ info = '● /help — помощь по командам бота\n' \
        '● /history - вывод истории поиска отелей'
 
 
-@bot.message_handler(commands=['start', 'help', 'lowprice', 'highprice', 'bestdeal'])
+@bot.message_handler(commands=['start', 'help', 'lowprice', 'highprice', 'bestdeal', 'history'])
 def handle_start_help(message):
     if not user_bd.get(message.from_user.id):
         user_bd[message.from_user.id] = Users(message)
@@ -40,13 +40,17 @@ def handle_start_help(message):
         print('метоД', user_bd[message.from_user.id].search_method)
         msg = bot.send_message(message.from_user.id, 'В каком городе будем искать?')
         bot.register_next_step_handler(msg, next_step_city)
+    elif message.text == '/history':
+        bot.send_message(message.from_user.id, user_bd[message.from_user.id].history, parse_mode="Markdown")
+
+
 
 @bot.message_handler(content_types=['text', 'document', 'audio', 'photo'])
 def get_text_messages(message):
     if not user_bd.get(message.from_user.id):
         user_bd[message.from_user.id] = Users(message)
     if message.text == '🏨Найти отель':
-        user_bd[message.from_user.id] = Users(message)
+        user_bd[message.from_user.id].clear_cache()
         markup = types.InlineKeyboardMarkup()
         markup.add(
             types.InlineKeyboardButton(text='Самый дешёвый в городе', callback_data='low_price'),
