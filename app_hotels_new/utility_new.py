@@ -6,14 +6,17 @@ import requests
 from telebot import TeleBot, apihelper, types
 from dotenv import dotenv_values
 
-from users_new import Users
-
 user_bd = dict()
 config = dotenv_values(".env")
 bot = TeleBot(config['TELEGRAM_API_TOKEN'])
 
 
 def check_language(text):
+    """
+    Ф-ция определения английского языка иначе русский, для формы отправки GET Запросов
+    :param text: принимаемый текст входящего текста города
+    :return: 'en_US' или 'ru_RU'
+    """
     if re.findall(r'[a-zA-Z]', text):
         return 'en_US'
     else:
@@ -21,6 +24,9 @@ def check_language(text):
 
 
 def mess_wait(stop_event, chat_id, message_id, text, bot):
+    """
+    Функция создающая эффект анимированного поиска при ожидании ответа от request.GET()
+    """
     count_point = 0
     while not stop_event.wait(0.2):
         if count_point == 0:
@@ -37,6 +43,9 @@ def mess_wait(stop_event, chat_id, message_id, text, bot):
 
 
 class SearchHotel:
+    """
+    Класс направленный на парсинг информации получаемой от request.
+    """
     headers = {
         'x-rapidapi-key': config['RAPID_API_TOKEN3'],
         'x-rapidapi-host': "hotels4.p.rapidapi.com"
@@ -44,6 +53,14 @@ class SearchHotel:
 
     @classmethod
     def search_city_data(cls, bot, message):
+        """
+        Функция направленная на отправку get запроса на сервер с целью получения информации
+        по уточнению искомого города с записью в объект User кеша полученного ответа, и отправки
+        уточняющего характера список кликабельных городов.
+
+        :param bot: объект телеграмм бота
+        :param message: объект входящего сообщения от пользователя
+        """
         url = "https://hotels4.p.rapidapi.com/locations/search"
         querystring = {"query": message.text, "locale": check_language(message.text)}
         message_info = bot.send_message(message.from_user.id, 'Идет поиск информации по городу')
@@ -72,6 +89,12 @@ class SearchHotel:
 
     @classmethod
     def search_hotels(cls, bot, message):
+        """
+        Функция поиска отелей по выбранным параметрам метода поиска
+
+        :param bot: объект телеграмм бота
+        :param message: объект входящего сообщения от пользователя
+        """
         url = "https://hotels4.p.rapidapi.com/properties/list"
 
         querystring = {
@@ -93,7 +116,6 @@ class SearchHotel:
                                 "priceMax": user_bd[message.from_user.id].price_min_max['max'],
                                 "sortOrder": "PRICE",
                                 "landmarkIds": "city center"})
-
         message_info = bot.send_message(message.from_user.id, 'Идет поиск отелей')
         pill2kill = threading.Event()
         wait_effect = threading.Thread(target=mess_wait,
@@ -112,6 +134,11 @@ class SearchHotel:
 
     @classmethod
     def show_hotels(cls, message):
+        """
+        Ф-ция подготовки спарсенной информации для последующей подготовки вывода найденных отелей
+        по критериям выбранным пользователем
+        :param message: объект входящего сообщения от пользователя
+        """
         url_get_photo = "https://hotels4.p.rapidapi.com/properties/get-hotel-photos"
         best_deal_view = 0
         for i in user_bd[message.from_user.id].cache_data['data']['body']['searchResults']['results']:
@@ -177,6 +204,10 @@ class SearchHotel:
 
 
 def next_step_city(mess):
+    """
+    Ф-ция проверки на корректность ввода названия города.
+    :param mess: объект входящего сообщения от пользователя
+    """
     print(mess.chat.id, mess.text)
     if len(re.findall(r'[А-Яа-яЁёa-zA-Z0-9 -]+', mess.text)) > 1:
         err_city = bot.send_message(mess.chat.id,
@@ -189,6 +220,11 @@ def next_step_city(mess):
 
 
 def next_step_count_hotels(mess):
+    """
+    Ф-ция проверки на корректность ввода кол-ва искомых отелей в городе.
+    В случае положительного ответа, вызываем ф-цию range_request_price.
+    :param mess: объект входящего сообщения от пользователя
+    """
     if not isinstance(mess.text, str) or not mess.text.isdigit():
         err_num = bot.send_message(mess.chat.id,
                                    'Количество должно состоять из цифр! вводи еще раз количество')
@@ -211,6 +247,10 @@ def next_step_count_hotels(mess):
 
 
 def range_request_price(mess):
+    """
+    Ф-ция проверки на корректность ввода диапазона поиска от центра.
+    :param mess: объект входящего сообщения от пользователя
+    """
     price_min_max_list = list(map(int, re.findall(r'\d+', mess.text)))
     if not isinstance(mess.text, str) or len(price_min_max_list) != 2:
         err_num = bot.send_message(mess.chat.id,
@@ -227,15 +267,16 @@ def range_request_price(mess):
 
 
 def search_distance(mess):
+    """
+    Ф-ция проверки на корректность ввода кол-ва искомых отелей в городе.
+    :param mess: объект входящего сообщения от пользователя
+    """
     distance_list = list(map(int, re.findall(r'\d+', mess.text)))
     if not isinstance(mess.text, str) or len(distance_list) != 2:
         err_num = bot.send_message(mess.chat.id,
                                    'Должно быть 2 числа! Введи еще раз!')
         bot.register_next_step_handler(err_num, search_distance)
     else:
-        print(distance_list)
-        print(min(distance_list))
-        print(max(distance_list))
         user_bd[mess.chat.id].distance_min_max['min'] = min(distance_list)
         user_bd[mess.chat.id].distance_min_max['max'] = max(distance_list)
         SearchHotel.search_hotels(bot, mess)
@@ -245,6 +286,10 @@ def search_distance(mess):
 
 
 def request_photo(mess):
+    """
+    Ф-ция отправляющая кнопки с вопросом будем ли искать фото?
+    :param mess: объект входящего сообщения от пользователя
+    """
     markup = types.InlineKeyboardMarkup()
     yes_photo_hotels = types.InlineKeyboardButton(text='✅Да', callback_data='yes_photo')
     no_photo_hotels = types.InlineKeyboardButton(text='❌Нет', callback_data='no_photo')
@@ -253,6 +298,11 @@ def request_photo(mess):
 
 
 def next_step_count_photo(mess):
+    """
+    Ф-ция проверки на корректность ввода пользователем кол-ва отображаемых изображений с отелями.
+    :param mess: объект входящего сообщения от пользователя
+
+    """
     if not isinstance(mess.text, str) or not mess.text.isdigit():
         err_num = bot.send_message(mess.chat.id,
                                    'Количество должно состоять из цифр! вводи еще раз количество')

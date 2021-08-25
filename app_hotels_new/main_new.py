@@ -2,9 +2,7 @@ import re
 
 from users_new import Users
 from utility_new import next_step_city, config, next_step_count_hotels, next_step_count_photo, SearchHotel
-
 from telebot import types, apihelper
-
 from utility_new import bot, user_bd
 
 info = '● /help — помощь по командам бота\n' \
@@ -16,14 +14,20 @@ info = '● /help — помощь по командам бота\n' \
 
 @bot.message_handler(commands=['start', 'help', 'lowprice', 'highprice', 'bestdeal', 'history'])
 def handle_start_help(message):
+    """
+    Функция обработки входящих сообщений от пользователя следующих
+    команд: /start, /help, /lowprice, /highprice, /bestdeal, /history
+
+    :param message: объект входящего сообщения от пользователя
+    :type: message: types.Message
+    """
     if not user_bd.get(message.from_user.id):
         user_bd[message.from_user.id] = Users(message)
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=False)
     btn_a = types.KeyboardButton('🏨Найти отель')
     btn_b = types.KeyboardButton('📗 Руководство')
-    btn_c = types.KeyboardButton('🚧 О сервисе')
     markup.row(btn_a, btn_b)
-    markup.row(btn_c)
+
     if message.text == '/start':
         start_help_text = f"Привет {user_bd[message.from_user.id].username}, я БОТ Too Easy Travel✅,\n" \
                           "И я смогу подобрать для тебя отель 🏨"
@@ -47,6 +51,15 @@ def handle_start_help(message):
 
 @bot.message_handler(content_types=['text'])
 def get_text_messages(message):
+    """
+    Функция обработчик входящих сообщений:
+    1. '🏨Найти отель' - выдаст пользователю в окне мессенджера варианты поиска отелей.
+    2. '📗 Руководство' - краткое руководство пользователя.
+
+
+    :param message: объект входящего сообщения от пользователя
+    :type: message: types.Message
+    """
     if not user_bd.get(message.from_user.id):
         user_bd[message.from_user.id] = Users(message)
     if message.text == '🏨Найти отель':
@@ -66,6 +79,12 @@ def get_text_messages(message):
 
 @bot.callback_query_handler(func=lambda c: True)
 def inline(c):
+    """
+    Функция обработчик возвращаемого значения при клике "кнопки" пользователем в окне мессенджера.
+
+    :param c: response объекта от пользователя при клике на кнопки.
+    :return:
+    """
     if c.data in ['low_price', 'high_price']:
         bot.delete_message(c.message.chat.id, message_id=c.message.id)
         user_bd[c.message.chat.id].search_method = ('PRICE' if c.data == 'low_price' else 'PRICE_HIGHEST_FIRST')
