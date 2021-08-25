@@ -11,7 +11,7 @@ config = dotenv_values(".env")
 bot = TeleBot(config['TELEGRAM_API_TOKEN'])
 
 
-def check_language(text):
+def check_language(text: str) -> str:
     """
     Ф-ция определения английского языка иначе русский, для формы отправки GET Запросов
     :param text: принимаемый текст входящего текста города
@@ -23,9 +23,10 @@ def check_language(text):
         return 'ru_RU'
 
 
-def mess_wait(stop_event, chat_id, message_id, text, bot):
+def mess_wait(stop_event, chat_id: int, message_id: int, text: str, bot) -> None:
     """
     Функция создающая эффект анимированного поиска при ожидании ответа от request.GET()
+    работающая в асинхронном режиме.
     """
     count_point = 0
     while not stop_event.wait(0.2):

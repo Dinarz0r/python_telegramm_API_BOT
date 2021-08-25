@@ -26,8 +26,9 @@ def handle_start_help(message):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=False)
     btn_a = types.KeyboardButton('🏨Найти отель')
     btn_b = types.KeyboardButton('📗 Руководство')
+    # btn_c = types.KeyboardButton('🚧 О сервисе')
     markup.row(btn_a, btn_b)
-
+    # markup.row(btn_c)
     if message.text == '/start':
         start_help_text = f"Привет {user_bd[message.from_user.id].username}, я БОТ Too Easy Travel✅,\n" \
                           "И я смогу подобрать для тебя отель 🏨"
@@ -48,14 +49,12 @@ def handle_start_help(message):
         bot.send_message(message.from_user.id, user_bd[message.from_user.id].history, parse_mode="Markdown")
 
 
-
 @bot.message_handler(content_types=['text'])
 def get_text_messages(message):
     """
     Функция обработчик входящих сообщений:
     1. '🏨Найти отель' - выдаст пользователю в окне мессенджера варианты поиска отелей.
     2. '📗 Руководство' - краткое руководство пользователя.
-
 
     :param message: объект входящего сообщения от пользователя
     :type: message: types.Message
@@ -127,5 +126,4 @@ if __name__ == '__main__':
         try:
             bot.polling(none_stop=True, interval=0)
         except Exception as ex:
-            # TODO Доработаь Обработка ошибок
             pass
