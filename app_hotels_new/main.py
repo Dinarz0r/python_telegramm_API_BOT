@@ -1,9 +1,9 @@
 import re
 
-from users_new import Users
-from utility_new import next_step_city, config, next_step_count_hotels, next_step_count_photo, SearchHotel
+from users import Users
+from utility import next_step_city, config, next_step_count_hotels, next_step_count_photo, SearchHotel
 from telebot import types, apihelper
-from utility_new import bot, user_bd
+from utility import bot, user_bd
 
 info = '● /help — помощь по командам бота\n' \
        '● /lowprice — вывод самых дешёвых отелей в городе\n' \
