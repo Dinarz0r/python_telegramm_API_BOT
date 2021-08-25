@@ -3,7 +3,7 @@ import re
 from users_new import Users
 from utility_new import next_step_city, config, next_step_count_hotels, next_step_count_photo, SearchHotel
 
-from telebot import TeleBot, types, apihelper
+from telebot import types, apihelper
 
 from utility_new import bot, user_bd
 
@@ -45,7 +45,7 @@ def handle_start_help(message):
 
 
 
-@bot.message_handler(content_types=['text', 'document', 'audio', 'photo'])
+@bot.message_handler(content_types=['text'])
 def get_text_messages(message):
     if not user_bd.get(message.from_user.id):
         user_bd[message.from_user.id] = Users(message)

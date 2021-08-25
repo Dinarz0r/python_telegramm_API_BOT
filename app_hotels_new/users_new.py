@@ -136,5 +136,4 @@ class Users:
         elif self._search_method == 'best_deal':
             command = '/bestdeal'
 
-        self._history[datetime.now().strftime("%d-%m-%Y %H:%M")] = {'command': command, 'hotels': hotels}
-
+        self._history[datetime.now().strftime("%d-%m-%Y %H:%M:%S")] = {'command': command, 'hotels': hotels}

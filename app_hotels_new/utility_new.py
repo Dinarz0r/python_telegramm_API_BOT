@@ -189,7 +189,7 @@ def next_step_city(mess):
 
 
 def next_step_count_hotels(mess):
-    if not mess.text.isdigit():
+    if not isinstance(mess.text, str) or not mess.text.isdigit():
         err_num = bot.send_message(mess.chat.id,
                                    'Количество должно состоять из цифр! вводи еще раз количество')
         bot.register_next_step_handler(err_num, next_step_count_hotels)
@@ -212,23 +212,27 @@ def next_step_count_hotels(mess):
 
 def range_request_price(mess):
     price_min_max_list = list(map(int, re.findall(r'\d+', mess.text)))
-    if len(price_min_max_list) == 2:
+    if not isinstance(mess.text, str) or len(price_min_max_list) != 2:
+        err_num = bot.send_message(mess.chat.id,
+                                   'Должно быть 2 числа! Введи еще раз!')
+        bot.register_next_step_handler(err_num, range_request_price)
+    else:
         user_bd[mess.chat.id].price_min_max['min'] = min(price_min_max_list)
         user_bd[mess.chat.id].price_min_max['max'] = max(price_min_max_list)
         msg_dist = bot.send_message(mess.chat.id,
                                     'Укажите диапазон расстояния от центра в км. Пример (1-5)')
         bot.register_next_step_handler(msg_dist, search_distance)
-    else:
-        err_num = bot.send_message(mess.chat.id,
-                                   'Должно быть 2 числа! Введи еще раз!')
-        bot.register_next_step_handler(err_num, range_request_price)
     print('price max', user_bd[mess.chat.id].price_min_max['max'])
     print('price min', user_bd[mess.chat.id].price_min_max['min'])
 
 
 def search_distance(mess):
     distance_list = list(map(int, re.findall(r'\d+', mess.text)))
-    if len(distance_list) == 2:
+    if not isinstance(mess.text, str) or len(distance_list) != 2:
+        err_num = bot.send_message(mess.chat.id,
+                                   'Должно быть 2 числа! Введи еще раз!')
+        bot.register_next_step_handler(err_num, search_distance)
+    else:
         print(distance_list)
         print(min(distance_list))
         print(max(distance_list))
@@ -236,10 +240,6 @@ def search_distance(mess):
         user_bd[mess.chat.id].distance_min_max['max'] = max(distance_list)
         SearchHotel.search_hotels(bot, mess)
         request_photo(mess)
-    else:
-        err_num = bot.send_message(mess.chat.id,
-                                   'Должно быть 2 числа! Введи еще раз!')
-        bot.register_next_step_handler(err_num, search_distance)
     print('dist max', user_bd[mess.chat.id].distance_min_max['max'])
     print('dist min', user_bd[mess.chat.id].distance_min_max['min'])
 
@@ -253,7 +253,7 @@ def request_photo(mess):
 
 
 def next_step_count_photo(mess):
-    if not mess.text.isdigit():
+    if not isinstance(mess.text, str) or not mess.text.isdigit():
         err_num = bot.send_message(mess.chat.id,
                                    'Количество должно состоять из цифр! вводи еще раз количество')
         bot.register_next_step_handler(err_num, next_step_count_photo)
