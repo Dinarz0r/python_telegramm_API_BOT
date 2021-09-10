@@ -229,10 +229,7 @@ class Users:
                     and self.search_method == 'best_deal':
                 min_dist = self.distance_min_max.get('min')
                 max_dist = self.distance_min_max.get('max')
-                test_dist = i["landmarks"][0]["distance"]
-                print(test_dist)
                 dist_center = int(re.findall(r'\d+', i["landmarks"][0]["distance"])[0])
-                print(dist_center)
                 if not min_dist <= dist_center <= max_dist:
                     continue
                 else:

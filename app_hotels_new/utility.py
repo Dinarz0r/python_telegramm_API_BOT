@@ -23,10 +23,10 @@ def check_language(text: str) -> str:
     :param text: принимаемый текст входящего текста города
     :return: 'en_US' или 'ru_RU'
     """
-    if re.findall(r'[a-zA-Z -]', text):
-        return "en_US"
-    else:
+    if re.findall(r'[А-Яа-яЁё -]', re.sub(r'[- ]', '', text)):
         return "ru_RU"
+    else:
+        return "en_US"
 
 
 def mess_wait(stop_event, chat_id: int, message_id: int, text: str, bot) -> None:
@@ -54,7 +54,7 @@ class SearchHotel:
     Класс направленный на парсинг информации получаемой от request.
     """
     headers = {
-        'x-rapidapi-key': config['RAPID_API_TOKEN3'],
+        'x-rapidapi-key': config['RAPID_API_TOKEN'],
         'x-rapidapi-host': "hotels4.p.rapidapi.com"
     }
 
@@ -78,6 +78,7 @@ class SearchHotel:
         response = requests.get(url, headers=cls.headers, params=querystring, timeout=10)
         if response.status_code != 200:
             bot.send_message(message.from_user.id, 'Технические работы 15 мин. Попробуйте позднее')
+            return
         pill2kill.set()
         wait_effect.join()
         apihelper.delete_message(config['TELEGRAM_API_TOKEN'], message_info.chat.id, message_info.id)
@@ -145,6 +146,7 @@ class SearchHotel:
         """
         url_get_photo = "https://hotels4.p.rapidapi.com/properties/get-hotel-photos"
         best_deal_view = 0
+        resp_hotel = ''
         for i in user_bd[message.from_user.id].cache_data['data']['body']['searchResults']['results']:
             if user_bd[message.from_user.id].distance_min_max \
                     and user_bd[message.from_user.id].search_method == 'best_deal':
@@ -158,11 +160,12 @@ class SearchHotel:
                     if best_deal_view > user_bd[message.from_user.id].count_show_hotels:
                         break
             i_text = f'*Имя: {i["name"]}*\n' \
-                     f'Адрес: {i["address"]["countryName"]}, {i["address"]["locality"]}, ' \
-                     f'{i["address"]["streetAddress"]}\n' \
-                     f'От центра города: {i["landmarks"][0]["distance"]}\nЦена {i["ratePlan"]["price"]["current"]}'
+                     f'Адрес: {i["address"].get("countryName")}, {i["address"].get("locality")}' \
+                     f'{(", " + i["address"].get("streetAddress") if i["address"].get("streetAddress") else "")}\n' \
+                     f'От центра города: {i["landmarks"][0]["distance"]}\nЦена {i["ratePlan"]["price"]["current"]}\n\n'
+
             if not user_bd[message.from_user.id].photo:
-                bot.send_message(message.from_user.id, i_text, parse_mode="Markdown")
+                resp_hotel += i_text
             else:
                 message_info = bot.send_message(message.from_user.id, f'Идет поиск фото отеля *{i["name"]}*',
                                                 parse_mode="Markdown")
@@ -196,6 +199,8 @@ class SearchHotel:
                 else:
                     bot.send_message(message.from_user.id, i_text, parse_mode="Markdown")
 
+        if not user_bd[message.from_user.id].photo:
+            bot.send_message(message.from_user.id, resp_hotel, parse_mode="Markdown")
         bot.send_message(message.from_user.id,
                          'Поиск завершен✅')
         user_bd[message.from_user.id].save_history()
@@ -207,7 +212,7 @@ def next_step_city(mess):
     Ф-ция проверки на корректность ввода названия города.
     :param mess: объект входящего сообщения от пользователя
     """
-    if check_method(mess, 'Увы вы выбрали город с названием метода, так нельзя. Давай попробуем сначала'):
+    if check_method(mess, 'Увы, вы выбрали город с названием метода, так нельзя. Давайте попробуем сначала'):
         pass
     elif len(re.findall(r'[А-Яа-яЁёa-zA-Z0-9 -]+', mess.text)) > 1:
         err_city = bot.send_message(mess.chat.id,
@@ -225,7 +230,7 @@ def next_step_count_hotels(mess):
     В случае положительного ответа, вызываем ф-цию range_request_price.
     :param mess: объект входящего сообщения от пользователя
     """
-    if check_method(mess, 'Увы вы выбрали кол-во с названием метода, так нельзя. Давай попробуем сначала'):
+    if check_method(mess, 'Увы, вы выбрали кол-во с названием метода, так нельзя. Давайте попробуем сначала'):
         pass
     elif not isinstance(mess.text, str) or not mess.text.isdigit():
         err_num = bot.send_message(mess.chat.id,
@@ -255,11 +260,11 @@ def range_request_price(mess):
     """
 
     price_min_max_list = list(map(int, re.findall(r'\d+', mess.text)))
-    if check_method(mess, 'Увы вы ввели диапазон с названием метода, так нельзя. Давай попробуем сначала'):
+    if check_method(mess, 'Увы, вы ввели диапазон с названием метода, так нельзя. Давайте попробуем сначала'):
         pass
     elif not isinstance(mess.text, str) or len(price_min_max_list) != 2:
         err_num = bot.send_message(mess.chat.id,
-                                   'Должно быть 2 числа! Введи еще раз!')
+                                   'Должно быть 2 числа! Введите еще раз!')
         bot.register_next_step_handler(err_num, range_request_price)
     else:
         user_bd[mess.chat.id].price_min_max['min'] = min(price_min_max_list)
@@ -279,7 +284,7 @@ def search_distance(mess):
         pass
     elif not isinstance(mess.text, str) or len(distance_list) != 2:
         err_num = bot.send_message(mess.chat.id,
-                                   'Должно быть 2 числа! Введи еще раз!')
+                                   'Должно быть 2 числа! Введите еще раз!')
         bot.register_next_step_handler(err_num, search_distance)
     else:
         user_bd[mess.chat.id].distance_min_max['min'] = min(distance_list)

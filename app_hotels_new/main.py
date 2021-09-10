@@ -1,9 +1,13 @@
+from datetime import datetime
 import re
 
 from users import Users
 from utility import next_step_city, config, next_step_count_hotels, next_step_count_photo, SearchHotel
 from telebot import types, apihelper
 from utility import bot, user_bd
+import logging
+
+logging.basicConfig(filename="logger.log", level=logging.INFO)
 
 info = '● /help — помощь по командам бота\n' \
        '● /lowprice — вывод самых дешёвых отелей в городе\n' \
@@ -26,9 +30,9 @@ def handle_start_help(message):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=False)
     btn_a = types.KeyboardButton('🏨Найти отель')
     btn_b = types.KeyboardButton('📗 Руководство')
-    # btn_c = types.KeyboardButton('🚧 О сервисе')
+    btn_c = types.KeyboardButton('🌏 О сервисе')
     markup.row(btn_a, btn_b)
-    # markup.row(btn_c)
+    markup.row(btn_c)
     if message.text == '/start':
         start_help_text = f"Привет {user_bd[message.from_user.id].username}, я БОТ Too Easy Travel✅,\n" \
                           "И я смогу подобрать для тебя отель 🏨"
@@ -45,7 +49,10 @@ def handle_start_help(message):
         msg = bot.send_message(message.from_user.id, 'В каком городе будем искать?')
         bot.register_next_step_handler(msg, next_step_city)
     elif message.text == '/history':
-        bot.send_message(message.from_user.id, user_bd[message.from_user.id].history, parse_mode="Markdown")
+        history = user_bd[message.from_user.id].history
+        if not history:
+            history = 'Ваша история пуста 💁‍♂️'
+        bot.send_message(message.from_user.id, history, parse_mode="Markdown")
 
 
 @bot.message_handler(content_types=['text'])
@@ -68,11 +75,13 @@ def get_text_messages(message):
             types.InlineKeyboardButton(text='Самый дорогой в городе', callback_data='high_price'),
             types.InlineKeyboardButton(text='фильтр по цене и расположению от центра', callback_data='best_deal'),
             row_width=True)
-        massage_info = bot.send_message(message.from_user.id, "🔎 выберете способ поиска", reply_markup=markup)
-
-        user_bd[message.from_user.id].config['id_last_messages'] = massage_info.message_id
+        bot.send_message(message.from_user.id, "🔎 выберете способ поиска", reply_markup=markup)
     elif message.text == '📗 Руководство':
         bot.send_message(message.from_user.id, info)
+    elif message.text == '🌏 О сервисе':
+        bot.send_message(message.from_user.id,
+                         'Telegram-бот для поиска подходящих пользователю отелей специально для Skillbox\n\n'
+                         'Если хочешь аналогичный бот тебе к ➡️ @tgepic ✅')
 
 
 @bot.callback_query_handler(func=lambda c: True)
@@ -112,6 +121,8 @@ def inline(c):
             bot.register_next_step_handler(msg2, next_step_count_photo)
         else:
             SearchHotel.show_hotels(c)
+    else:
+        logging.info(c.message.chat.id, f'Команда {c.data} не обработана')
 
 
 if __name__ == '__main__':
@@ -119,4 +130,4 @@ if __name__ == '__main__':
         try:
             bot.polling(none_stop=True, interval=0)
         except Exception as ex:
-            pass
+            logging.error(f"{datetime.now()} - {ex}")
