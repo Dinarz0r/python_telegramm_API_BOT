@@ -42,7 +42,6 @@ def handle_start_help(message):
         bot.register_next_step_handler(msg, next_step_city)
     elif message.text == '/bestdeal':
         user_bd[message.from_user.id].search_method = 'best_deal'
-        print('метоД', user_bd[message.from_user.id].search_method)
         msg = bot.send_message(message.from_user.id, 'В каком городе будем искать?')
         bot.register_next_step_handler(msg, next_step_city)
     elif message.text == '/history':
@@ -87,13 +86,11 @@ def inline(c):
     if c.data in ['low_price', 'high_price']:
         bot.delete_message(c.message.chat.id, message_id=c.message.id)
         user_bd[c.message.chat.id].search_method = ('PRICE' if c.data == 'low_price' else 'PRICE_HIGHEST_FIRST')
-        print('метоД', user_bd[c.message.chat.id].search_method)
         msg = bot.send_message(c.message.chat.id, 'В каком городе будем искать?')
         bot.register_next_step_handler(msg, next_step_city)
     elif c.data == 'best_deal':
         bot.delete_message(c.message.chat.id, message_id=c.message.id)
         user_bd[c.message.chat.id].search_method = 'best_deal'
-        print('метоД', user_bd[c.message.chat.id].search_method)
         msg = bot.send_message(c.message.chat.id, 'В каком городе будем искать?')
         bot.register_next_step_handler(msg, next_step_city)
     elif c.data.startswith('choice_city_'):
@@ -102,7 +99,6 @@ def inline(c):
             user_bd[c.message.chat.id].cache_data['suggestions'][0]['entities'][choice_city][
                 'destinationId']
         apihelper.delete_message(config['TELEGRAM_API_TOKEN'], c.message.chat.id, c.message.message_id)
-        print('выбранный id города', user_bd[c.message.chat.id].id_city)
 
         msg2 = bot.send_message(c.message.chat.id,
                                 'Количество отелей, которые необходимо вывести в результате? (макс. 25)')
@@ -110,15 +106,12 @@ def inline(c):
     elif c.data in ['yes_photo', 'no_photo']:
         bot.delete_message(c.message.chat.id, message_id=c.message.id)
         user_bd[c.message.chat.id].photo = (True if c.data == 'yes_photo' else False)
-        print(user_bd[c.message.chat.id].photo)
         if user_bd[c.message.chat.id].photo:
             msg2 = bot.send_message(c.message.chat.id,
                                     'Количество фотографий, которые необходимо вывести в результате? (макс. 4)')
             bot.register_next_step_handler(msg2, next_step_count_photo)
         else:
             SearchHotel.show_hotels(c)
-
-        print('ФЛАГ ФОТО', user_bd[c.message.chat.id].photo)
 
 
 if __name__ == '__main__':

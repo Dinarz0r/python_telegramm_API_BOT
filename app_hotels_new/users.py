@@ -15,12 +15,13 @@ class Users:
         self._search_city = None
         self._id_city = None
         self._cache_data = None
-        self._count_show_hotels= None
+        self._count_show_hotels = None
         self._photo = None
-        self._count_show_photo: int = None
+        self._count_show_photo = None
         self._price_min_max: dict = dict()
         self._distance_min_max: dict = dict()
         self._history: dict = dict()
+        self._language = 'ru_RU'
 
     def clear_cache(self) -> None:
         """
@@ -35,6 +36,24 @@ class Users:
         self._count_show_photo = None
         self._price_min_max = dict()
         self._distance_min_max = dict()
+        self._language = 'ru_RU'
+
+    @property
+    def language(self) -> str:
+        """
+        Геттер метода языка
+        :return: _language
+        :rtype: str
+        """
+        return self._language
+
+    @language.setter
+    def language(self, language: str) -> None:
+        """
+        Сеттер метода языка
+        :param language: язык
+        """
+        self._language: str = language
 
     @property
     def search_method(self) -> str:
